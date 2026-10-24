@@ -1,0 +1,5 @@
+title: terminalkeeper
+description: 给 AI 用的持久终端：tmux 常驻会话 + DSH 面板 + 审计链 + 引用库
+theme: jekyll-theme-minimal
+show_downloads: false
+lang: zh-CN

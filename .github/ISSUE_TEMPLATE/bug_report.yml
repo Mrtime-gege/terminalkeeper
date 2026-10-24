@@ -1,0 +1,150 @@
+name: 缺陷报告
+description: 报告 terminalkeeper 的可复现缺陷（工具、HTTP 端点、面板交互、输入法、生命周期）
+title: '[Bug] '
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你花时间报告问题。先花一分钟确认下面三件事，能省掉一轮往返：
+
+        * 宿主半改代码后必须**重启 `dsh web`**（ESM 模块缓存），客户端半改代码后必须**刷新页面**。
+        * 本插件要求会话模式为 **`danger-full-access`**。在 `workspace-write` 下建 shell 会失败
+          （`error connecting to /tmp/tmux-1000/...`），这是沙箱挡住了 tmux，不是插件缺陷。
+        * 高危命令拦截是**纯文本正则**，漏报与误报都请给出**完整输入字符串**。
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: terminalkeeper 版本
+      description: 面板指标行会显示版本与构建号（形如 `v0.1.0 · c11`）；也可以看 profile 安装位置里的 package.json。
+      placeholder: '0.1.0'
+    validations:
+      required: true
+
+  - type: input
+    id: tmux-version
+    attributes:
+      label: tmux 版本
+      description: 执行 `tmux -V` 的输出。tmux 版本差异是本插件踩坑最多的地方。
+      placeholder: 'tmux 3.6b'
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js 版本
+      description: 执行 `node -v` 的输出。
+      placeholder: 'v20.11.0'
+    validations:
+      required: true
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本与部署方式
+      description: DSH 的版本号，以及是全局安装还是从源码检出运行。
+      placeholder: '例如 0.1.2-rc.1，源码检出运行'
+    validations:
+      required: false
+
+  - type: dropdown
+    id: session-mode
+    attributes:
+      label: 出问题时的会话模式
+      description: 面板或工具在这个会话里看到的沙箱模式。
+      options:
+        - danger-full-access
+        - workspace-write
+        - read-only
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题出现在哪一层
+      description: 选最贴近的一层；拿不准就选「不确定」。
+      options:
+        - 模型工具（shell_open / shell_send / shell_read / shell_history / shell_list / shell_resize / shell_rename / shell_close / shell_diagnose）
+        - HTTP 端点（/list /screen /keys /new /kill /resize /rename /diagnose）
+        - 面板交互（拖动、缩放、锁定、多 shell 切换）
+        - 输入与输入法（中文上屏、残留文本、按键不生效）
+        - 生命周期与看门狗（重启后会话丢失、进程残留）
+        - 安装与加载（插件没挂上、宿主启动失败）
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你预期发生什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 实际发生了什么？如果只是「没反应」，也请说明是没输出、没报错还是界面卡住。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从干净状态开始的最小步骤。涉及具体命令或按键序列时请逐条写出来。
+      placeholder: |
+        1. 打开面板并锁定
+        2. 输入 `py`，再用 Shift+左方向键选中 `py`
+        3. 观察输入框内容
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnose
+    attributes:
+      label: shell_diagnose 输出
+      description: 调用 `shell_diagnose` 工具，或 `GET <httpBase>/diagnose`，把 JSON 粘在这里。
+      render: json
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与报错
+      description: 宿主控制台输出、`dsh web` 的报错、浏览器控制台报错。**请先去掉凭据与内网地址。**
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: restarted
+    attributes:
+      label: 是否已经重启宿主并刷新页面
+      description: 这两步能排掉绝大多数「改动没生效」类问题。
+      options:
+        - 已重启 dsh web，也已刷新页面
+        - 只重启了 dsh web
+        - 只刷新了页面
+        - 都还没试过
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认
+      options:
+        - label: 我已在 `danger-full-access` 会话下复现过（或确认问题与该模式无关）
+          required: true
+        - label: 我已搜索过现有 issue，没有找到相同问题
+          required: true

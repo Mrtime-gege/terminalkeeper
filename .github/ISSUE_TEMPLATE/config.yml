@@ -1,0 +1,11 @@
+# 关闭「空白 issue」入口，所有 issue 都必须走上面的表单。
+blank_issues_enabled: false
+contact_links:
+  # 仓库地址已按实际归属填好（github.com/Mrtime-gege/terminalkeeper）。
+  # 迁到别的用户/组织名下时，记得同步改这两个 URL，并确认 Discussions 已开启。
+  - name: 使用问题与开放式讨论
+    url: https://github.com/Mrtime-gege/terminalkeeper/discussions
+    about: 安装、配置、用法上的疑问请看 Discussions；这里不适合报缺陷或提功能建议。
+  - name: 安全漏洞
+    url: https://github.com/Mrtime-gege/terminalkeeper/security/advisories/new
+    about: 请勿用公开 issue 披露安全问题，改用私有漏洞报告（详见 SECURITY.md）。
