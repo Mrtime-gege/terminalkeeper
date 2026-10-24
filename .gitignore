@@ -1,0 +1,53 @@
+# 依赖（本仓库没有 lockfile，也不提交依赖树）
+node_modules/
+.npm/
+
+# 打包产物
+*.tgz
+coverage/
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 编辑器 —— 整目录忽略，仓库不携带编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本地临时目录与实验产物
+tmp/
+.tmp/
+
+# Python 编译产物（scripts/ 下有 .py 工具脚本）
+__pycache__/
+*.pyc
+
+# 内部资料：保留在本地但不进公开仓库（如需公开，先逐行确认并登记进 scripts/test-public-surface.mjs 白名单）
+docs/更新记录.md
+docs/CHANGELOG.md
+docs/长任务测试.md
+docs/长任务测试报告-*.md
+# 注：安全规范文档**必须入库**（2026-10）：它是 scripts/test-docs.mjs 的“引用库安全模型门禁”的检查对象，
+# 未入库时门禁只能在新克隆里跳过 ⇒ CI 永远无法把关安全模型。
+docs/功能方案-待办.md
+docs/archive/设计-授权与审计重构.md
+docs/archive/面板重构方案.md
+
+# 备份包含秘密，绝不能入库（默认落点已改到 $HOME，这里是双保险）
+terminalkeeper-backup-*.json
+# 本机测试工具，不进任何发布物
+dev-tools/
+
+# 发布构建产物
+build/

@@ -1,0 +1,18 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown 用行尾两个空格表示换行，不要裁掉。
+[*.md]
+trim_trailing_whitespace = false
+
+# 脚本与配置文件同样两个空格（本仓库没有 Tab 缩进的文件）。
+[*.{sh,yml,yaml,json}]
+indent_style = space
+indent_size = 2

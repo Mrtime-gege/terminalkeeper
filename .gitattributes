@@ -1,0 +1,12 @@
+# 默认：由 Git 判定文本，统一以 LF 存入仓库。
+* text=auto eol=lf
+
+# 这些文件必须逐字 LF —— 换行符写错会让脚本在 Linux 上直接失败。
+*.sh text eol=lf
+*.yml text eol=lf
+
+# 源码一律按文本处理，保证 diff 与行尾归一化正常。
+*.js text
+
+# 二进制，不做任何换行转换。
+*.png binary

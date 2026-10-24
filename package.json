@@ -1,0 +1,123 @@
+{
+  "name": "terminalkeeper",
+  "version": "0.1.0",
+  "description": "持久化 tmux 终端面板（DSH Web）：多会话管理、复用同一 shell、锁与归属、提示信息与审计复盘。",
+  "author": "Mrtime-gege <327958341+Mrtime-gege@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mrtime-gege/terminalkeeper.git"
+  },
+  "homepage": "https://github.com/Mrtime-gege/terminalkeeper#readme",
+  "bugs": {
+    "url": "https://github.com/Mrtime-gege/terminalkeeper/issues"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "lib",
+    "bin",
+    "cordis.patch.yml",
+    "install-deps.sh",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE",
+    "purge-all.mjs"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "node --check lib/index.js && node --check lib/tmux.js && node --check lib/client.js && node --check lib/supervisor/protocol.mjs && node --check lib/supervisor/client.mjs && node --check lib/supervisor/daemon.mjs && node --check lib/audit-verdict.mjs",
+    "test:client": "node scripts/test-client.mjs",
+    "test": "node scripts/test-pure.mjs && node scripts/test-injection.mjs && node scripts/test-consent.mjs && node scripts/test-client.mjs && node scripts/test-first-use.mjs && node scripts/test-reply.mjs && node scripts/test-ux.mjs && node scripts/test-watch.mjs && node scripts/test-config.mjs && node scripts/test-watchdog.mjs && node scripts/test-checkpoints.mjs && node scripts/test-chain-days.mjs && node scripts/test-chain-repair.mjs && node scripts/test-tool-scope.mjs && node scripts/test-disjoint.mjs && node scripts/test-nonce.mjs && node scripts/test-summary.mjs && node scripts/test-uninstall-clean.mjs && node scripts/test-disposition.mjs && node scripts/test-obfuscate.mjs && node scripts/test-retention.mjs && node scripts/test-pack.mjs && node scripts/test-backup.mjs && node scripts/test-notices.mjs && node scripts/test-docs.mjs && node scripts/test-leak.mjs && node scripts/test-vault.mjs && node scripts/test-statehead.mjs && node scripts/test-vault-io.mjs && node scripts/test-vault-policy.mjs && node scripts/test-public-surface.mjs && node scripts/test-param-spec.mjs && node scripts/test-source-order.mjs && node scripts/test-supervisor.mjs && node scripts/test-hmr.mjs && node scripts/test-features.mjs && node scripts/test-purge-all.mjs",
+    "release:check": "node scripts/check-release-tree.mjs",
+    "leak:history": "node scripts/scan-history.mjs",
+    "prepublishOnly": "npm run check && npm run release:check",
+    "test:consent": "node scripts/test-consent.mjs",
+    "test:pure": "node scripts/test-pure.mjs",
+    "test:injection": "node scripts/test-injection.mjs",
+    "test:longrun": "node scripts/test-longrun.mjs",
+    "test:supervisor": "node scripts/test-supervisor.mjs",
+    "build:release": "node scripts/build-release.mjs",
+    "test:hmr": "node scripts/test-hmr.mjs",
+    "hmr:doctor": "node scripts/hmr-doctor.mjs",
+    "verify:runtime": "node scripts/verify-runtime.mjs",
+    "test:matrix": "node scripts/test-tool-matrix.mjs",
+    "docs:params": "node scripts/gen-param-doc.mjs",
+    "test:params": "node scripts/test-param-spec.mjs",
+    "blind:run": "node scripts/blind-run-plan.mjs",
+    "test:notices": "node scripts/test-notices.mjs",
+    "release:tree": "node scripts/build-release-tree.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "slots"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-tools": "^0.1.2-rc.1 || ^0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.0",
+    "react": "^18.2.0"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek",
+    "deepseek-harness",
+    "cordis",
+    "cordis-plugin",
+    "agent",
+    "ai-agent",
+    "terminal",
+    "tmux",
+    "shell",
+    "persistent-shell",
+    "interactive-terminal",
+    "pty",
+    "web-ui"
+  ],
+  "license": "MIT",
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "bin": {
+    "terminalkeeper": "bin/terminalkeeper.mjs"
+  },
+  "meta": {
+    "title": "Agent Shell",
+    "description": "在 DSH Web 界面里提供持久化 tmux 终端面板：多会话管理、复用同一 shell、锁与归属、提示与审计复盘。"
+  },
+  "icon": "./icon.svg"
+}
