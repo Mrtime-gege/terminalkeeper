@@ -1,0 +1,74 @@
+name: 功能建议
+description: 提出新能力或改进现有行为（工具、HTTP 端点、面板交互、生命周期）
+title: '[Feature] '
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提建议前请先看一眼「安全模型」与「已知限制」：有几类需求（真终端仿真 / 完整颜色与属性、
+        跨用户共享会话、把 Web 端口暴露到公网）是当前架构**有意不做**的，README 里有理由说明。
+        如果你的建议能改变这些前提，也欢迎提，请直接说明理由。
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 建议涉及哪一层
+      options:
+        - 模型工具
+        - HTTP 端点
+        - 面板交互与视觉
+        - 输入与输入法
+        - 生命周期与看门狗
+        - 配置项
+        - 文档
+        - 其它
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决的实际问题
+      description: 描述场景与痛点，而不是先给方案。说清现在你是怎么绕过去的。
+      placeholder: |
+        例如：后台同时开十几个 shell 时，我想按名字直接跳过去，
+        现在只能一个个点，切到第 10 个要按很多次。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的做法
+      description: 你希望它表现成什么样？涉及交互时请描述操作路径；涉及工具或配置时请给出期望的名字与参数。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案
+      description: 你考虑过的其它做法，以及为什么不如上面的方案。
+    validations:
+      required: false
+
+  - type: textarea
+    id: compat
+    attributes:
+      label: 兼容性影响
+      description: 会不会改变现有配置项语义、工具参数名或 HTTP 路由？如果会，请写出迁移方式；不会就写「无」。
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认
+      options:
+        - label: 我已读过 README 的「已知限制」与 SECURITY.md 的安全模型，本建议不属于其中有意不做的部分
+          required: true
+        - label: 我已搜索过现有 issue，没有找到相同建议
+          required: true

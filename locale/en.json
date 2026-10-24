@@ -1,0 +1,4 @@
+{
+  "title": "Agent Shell",
+  "description": "Persistent tmux terminal panel for the DSH Web UI: multi-session management, shell reuse, locks and ownership, notices and audit replay."
+}

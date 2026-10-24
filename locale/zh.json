@@ -1,0 +1,4 @@
+{
+  "title": "Agent Shell",
+  "description": "在 DSH Web 界面里提供持久化 tmux 终端面板：多会话管理、复用同一 shell、锁与归属、提示与审计复盘。"
+}
