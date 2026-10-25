@@ -1,0 +1,39 @@
+# terminalkeeper bundle patch —— 在 profile 根上插入一行插件。
+#
+# 宿主侧拥有一个私有 tmux 服务端（-L terminalkeeper），上面挂多个命名会话；
+# 注册 shell_* 工具，并暴露同源 HTTP：
+#   GET  <httpBase>/list                     会话列表 + 服务端信息
+#   GET  <httpBase>/screen?name=&lines=      当前屏 + 该会话指标
+#   POST <httpBase>/keys                     发按键
+#   POST <httpBase>/new  /kill  /resize
+#   GET  <httpBase>/diagnose
+# 客户端侧往 shell.overlay（root 作用域）加一个悬浮面板，因此不绑定任何会话。
+#
+# 只 insert 自己的一行，不 patch 任何官方行，可与其它插件共存。
+
+- insert:
+    - id: terminalkeeper
+      name: 'terminalkeeper'
+      config:
+        # 私有 tmux 服务端 socket 名（与用户自己的 tmux 默认 socket 隔离）
+        socket: terminalkeeper
+        httpBase: /plugins/shell
+        exposeHttp: true
+        # 注册 shell_open / shell_send / ... 工具，任何会话的 agent 都能驱动同一批 shell
+        exposeTools: true
+        # 布防脱离进程树的看门狗：harness 进程消失（含 kill -9 / 崩溃）后收掉服务端
+        watchdog: true
+        shell: bash
+        cols: 120
+        rows: 32
+        # 每会话的历史缓冲上限（行）—— 必须在建会话前设置，插件已按此顺序执行
+        historyLimit: 100000
+        maxSessions: 8
+        # 新 shell 的起始目录；留空则取 $HOME
+        defaultCwd: ''
+        # 高危命令启发式拦截（减速带，不是沙箱）
+        guardDangerousCommands: true
+        # 服务端开启 extended-keys（需要 tmux ≥ 3.2）：TUI 才能收到 Shift+Enter 这类带修饰键的
+        # 按键。默认关闭 —— 老版本 tmux 不认这个选项，而它写在 `-f` 启动配置里，
+        # 未知选项会让服务端起不来。确认自己的 tmux 版本后再开。
+        extendedKeys: false

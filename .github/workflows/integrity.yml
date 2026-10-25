@@ -1,0 +1,26 @@
+name: integrity
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 检查 npm 包只含运行时代码
+        run: |
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e '
+            const j = require("/tmp/pack.json");
+            const k = Object.keys(j)[0];
+            const files = j[k].files.map(f => f.path);
+            const bad = files.filter(p => /^(docs|scripts|\.github|release)\//.test(p));
+            if (bad.length) { console.error("非运行文件进了 npm 包:", bad); process.exit(1); }
+            console.log("npm 包文件数:", files.length);
+          '
