@@ -36,17 +36,29 @@ jobs:
           npm --version
       - name: 发布到 npm（OIDC Trusted Publishing，不使用任何长期 token）
         run: |
+          set -euo pipefail
           echo "auth: OIDC (Trusted Publishing)"
+          VER=$(node -p "require('./package.json').version")
+          # 幂等：工作流可能因 registry 传播延迟在“已发布但校验超时”处失败；
+          # 重跑时跳过 publish，直接进入校验，避免 403 cannot publish over existing version。
+          if npm view "terminalkeeper@$VER" version --prefer-online >/dev/null 2>&1; then
+            echo "terminalkeeper@$VER already published; skip publish"
+            exit 0
+          fi
           npm publish --access public --provenance --loglevel verbose
+
+      - name: 校验 npm registry
+        run: |
+          set -euo pipefail
           VER=$(node -p "require('./package.json').version")
           echo "verify terminalkeeper@$VER"
-          # registry 有传播延迟：重试，避免"发布成功但校验先失败"把 workflow 判红
-          for i in $(seq 1 12); do
-            if npm view "terminalkeeper@$VER" version >/dev/null 2>&1; then
-              echo "verified terminalkeeper@$VER"
+          # registry 传播可能超过 60s：最多等 5 分钟，且每次强制联网查询，避免缓存误判。
+          for i in $(seq 1 60); do
+            if npm view "terminalkeeper@$VER" version --prefer-online >/dev/null 2>&1; then
+              echo "verified terminalkeeper@$VER (after $((i * 5))s max)"
               exit 0
             fi
             sleep 5
           done
-          echo "::error::发布后 60s 内未在 registry 看到 terminalkeeper@$VER"
+          echo "::error::发布后 300s 内未在 registry 看到 terminalkeeper@$VER"
           exit 1
