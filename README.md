@@ -3,11 +3,13 @@
 > **给 AI 用的持久终端。** 一个 DSH 插件：私有 tmux 服务端托管多个长期存活的 shell，AI 用工具驱动，人用右下角面板随时接手，所有输入进哈希链审计。
 
 [![npm](https://img.shields.io/npm/v/terminalkeeper?color=2ea44f)](https://www.npmjs.com/package/terminalkeeper)
-[![license](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Mrtime-gege/terminalkeeper/blob/main/LICENSE)
 [![docs](https://img.shields.io/badge/docs-GitHub%20Pages-2ea44f)](https://mrtime-gege.github.io/terminalkeeper/)
 [![node](https://img.shields.io/badge/node-%E2%89%A520-339933)](https://nodejs.org/)
 
-**当前版本 0.1.2**（全新公开身份，从 0.1.0 开始计数）。文档站：<https://mrtime-gege.github.io/terminalkeeper/>
+## 当前版本
+
+**0.1.3**（全新公开身份，从 0.1.0 开始计数）。文档站：<https://mrtime-gege.github.io/terminalkeeper/>
 
 ## 它解决什么问题
 
@@ -18,8 +20,8 @@ terminalkeeper 让 AI 拥有**真正持久的终端**：
 - **7 个模型工具**：`shell_open / shell_run / shell_send / shell_read / shell_manage / shell_state / shell_audit`（同一个 shell 在一次调用里只能被操作一次，多任务请拆成多次调用）
 - **等待是一等公民**：`wait.kind = none / idle / bell / match / exit / file / noproc / cpu`（异步启动 → 读增量 → 用 `runId` 回取退出码）
 - **人的面板**：真终端（颜色、光标、全屏 TUI、`sudo`、REPL 全通），可锁定、可搜索、可帧回放
-- **审计链**：每次输入、会话开关、授权、改名、宏与引用库操作都进 SHA-256 封链；删除动作本身也先入链
-- **引用库**：值只在宿主与本机，AI 只能做**整条裸引用**喂 stdin 提示，按「剩余可用次数」限额
+- **审计链**：每次输入、会话开关、改名、宏与引用库操作都进 SHA-256 封链；删除动作本身也先入链
+- **引用库**：AI 只能做**整条裸引用**喂 stdin 提示，按「剩余可用次数」限额；口令组加设备 pepper，单独泄露 vault.json 时无法离线猜口令
 - **宏 / 工作区 / 快照**：可复用的命令片段、会话布局一键恢复、屏面与历史快照
 - 桌面应用无关：`dsh` 重启会话不丢（systemd scope），关页面/换对话/热重载都不影响
 
@@ -27,15 +29,25 @@ terminalkeeper 让 AI 拥有**真正持久的终端**：
 
 **这工具能把你的机器交给 AI。** 它不是受限执行环境。
 
-1. **由 AI 开发、无人审计**——自动化测试与真机验证有，人工安全审计没有。
-2. **授权 = 任意命令**——对话被授权后，AI 以**你自己的用户权限**读写一切；默认没有逐条审批。
-3. **护栏是启发式减速带**——`rm -rf /`、`mkfs`、`dd of=/dev/*`、`curl|sh` 等会被拦，但变量/脚本/拼接能绕过，也会误报。不要把它当沙箱。
+1. **未经独立人工安全审计；本插件由 AI 开发**——请把它当成个人工具，不要当成经过认证的安全产品。
+2. **没有任何审批防护**——工具 = 你的权限；插件没有对话级授权页面；能否使用写工具由 DSH 的沙箱模式决定，完全控制下 AI 以你的用户权限读写一切。
+3. **启发式护栏不是沙箱**——`rm -rf /`、`mkfs`、`dd of=/dev/*`、`curl|sh` 等会被拦，但变量/脚本/拼接能绕过，也会误报。
 4. **审计 = 可检测篡改，不是不可篡改**（默认）——同权限的 AI 能改审计文件；要内核级防删改跑 `./install-deps.sh --audit-lock`（`chattr +a`）。
 5. **整机重启会丢会话**——`dsh` 重启存活，整机/WSL2 关机连 tmux 一起带走；重要工作先落盘。
 6. **平台仅 Linux**（含 WSL2/容器），Node ≥ 20，macOS 不支持。
 7. **不要放进生产/多用户/有不可替代数据的机器。**
 
 > 别在终端里长期输入真凭据——留痕是如实记录的（密码提示会脱敏，其它明文输出不保证）。
+
+## 为什么没有对话授权
+
+terminalkeeper 不把「按对话放行/禁止」做成插件内的授权页面，这是有意的设计：
+
+- 插件和 AI 的 shell 跑在**同一个操作系统用户**下。AI 一旦能执行命令，就能直接改插件数据文件、调用本机控制接口、改插件代码，甚至改审计文件；
+- 所以「AI 已经能开 shell」之后再靠插件判断「它能不能用 shell」是自相矛盾的：已经拿到 shell 的一方总能绕过同用户进程里的规则；
+- 插件内的规则还会制造**假安全感**——看起来在限制 AI，实际上只限制了遵守规则的程序，防不住恶意或提示词注入后的 AI。
+
+真正能执行的是 **DSH 的沙箱模式**：完全控制（`danger-full-access`）下写工具直接可用；工作区/只读模式下写工具由模式闸门拒绝，只读工具始终可用。至于「不同用户、容器或宿主侧 broker」级别的隔离，需要操作系统/部署层去做，插件内部做不了。
 
 ## 安装
 
@@ -49,7 +61,7 @@ npx -y terminalkeeper doctor                    # 体检
 ## 快速上手
 
 1. 重启后右下角出现胶囊 **`>_ N 🔒`**；点 **＋** 新建 shell，或让 AI `shell_open`。
-2. 每个对话**第一次**用工具时会请你授权一次，之后正常使用。
+2. 插件没有对话授权页面；完全控制模式下写工具直接可用，受限模式下由模式闸门拒绝。
 3. 面板点锁即可直接打字；AI 用 `shell_run` 发命令、`shell_state` 看会话。
 4. 详情面板有 8 个页签：总览 / 概览 / 运行 / 安全 / 事件记录 / 引用库事件 / 日志审计 / 键位帮助；**三级页签视觉分级**（分段控件 → 下划线 → 文字 chip）。
 5. 想彻底清理：`node purge-all.mjs`（默认 dry-run，确认后加 `--yes`）。
@@ -76,8 +88,7 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 
 ## 兼容性
 
-- 宿主：DeepSeek Harness（`dsh`）**`0.1.5-rc.1` 到 `0.2.1-rc.2`**；0.2.1-rc.2 已跑 `npm test` + 真机冒烟（开壳/执行/关壳/看门狗接管）。
-- 升级 `dsh` 后插件消失：先看 [架构与实现](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/架构与实现.md) 的兼容闸一节。
+- 宿主：DeepSeek Harness（`dsh`）**`0.1.5-rc.1` 到 `0.2.1-rc.2`**。
 - 本插件 0.1.0 起用新包名与新数据目录 `~/.dsh/terminalkeeper`（从旧 `agent-shell` 自动复制迁移，旧目录保留可回退）。
 
 ## 文档
@@ -86,12 +97,10 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 |---|---|
 | [文档站](https://mrtime-gege.github.io/terminalkeeper/) | 全部文档的网页版（目录即索引） |
 | [使用指南](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/使用指南.md) | 安装、配置、面板、工具、引用库、宏、审计、键位 |
-| [工具与参数](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/工具与参数.md) | 五块模型、action.kind、等待条件、参数权威定义（生成表） |
-| [安全与引用库](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/安全与引用库.md) | 围栏、授权与锁、威胁模型、引用库信任边界 |
-| [架构与实现](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/架构与实现.md) | 架构、数据布局、HMR、已知限制、首次可用标准 |
-| [贡献与发布](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/贡献与发布.md) | 贡献、分支/提交规范、发布流程与回滚 |
+| [工具与参数](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/工具与参数.md) | 五块模型、action.kind、等待条件、参数权威定义 |
+| [安全与引用库](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/安全与引用库.md) | 围栏、锁、模式闸门、威胁模型、引用库信任边界 |
 
-> 正文文档是 5 篇 + 本 README；文档站首页是目录页。内部测试文档不随发布提供。
+> 正文文档是 3 篇 + 本 README；文档站首页是目录页。
 
 ## 给 AI 助手的操作卡
 
@@ -107,14 +116,8 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 4. `shell_manage { tasks: [{ target: { sessions: "<id>" }, action: { kind: "close" } }] }` 收尾。
 5. `shell_audit { tasks: [{ action: { kind: "audit" }, output: { lines: 5 } }] }` 头部 `chain: ✓`。
 
-**答疑口径**：它给 DSH 加装真实、持久、可审计的终端——AI 用 7 个工具驱动多个后台 tmux 会话，人用面板旁观或上手，可互相接管；每次输入进哈希链，vault 让密码值不过 AI 之手。必须同时讲清：① 这是把真 shell 交给 AI，护栏是减速带不是沙箱；② 不是受限执行环境、默认不弹逐条审批；③ 默认「可检测篡改」。
-
-## 开发与贡献
-
-想读代码、提 PR 或自己构建，先看 [贡献与发布](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/贡献与发布.md)；发布前的长任务测试、发布目录门禁与推送步骤都在规范里。
-
-本地快速自检一条命令：`npm test`（约 1500 条断言：纯函数 + 客户端 + 文档 / 泄露 / 发布白名单门禁）。
+**答疑口径**：它给 DSH 加装真实、持久、可审计的终端——AI 用 7 个工具驱动多个后台 tmux 会话，人用面板旁观或上手，可互相接管；每次输入进哈希链，vault 只允许 AI 按次引用值，不把值展开进命令。必须同时讲清：① 这是把真 shell 交给 AI，护栏是减速带不是沙箱；② 不是受限执行环境、默认不弹逐条审批；③ 默认「可检测篡改」。
 
 ## 许可证
 
-MIT（见 [LICENSE](./LICENSE)）。
+MIT（见 [LICENSE](https://github.com/Mrtime-gege/terminalkeeper/blob/main/LICENSE)）。

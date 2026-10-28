@@ -98,15 +98,13 @@ function install() {
   json.dsh.profile.bundles = [...bundles, PKG]
   const after = JSON.stringify(json, null, 2)
 
-  // 发布前置校验：远程版本存在才装（否则 pnpm 对 ^0.2.2 报 No matching version，用户看不懂）。
-  // 本地开发（file: 依赖 / dev-sync）不经过本命令，所以这里放心检查 registry。
+  // 安装前先确认 npm 上确实有这个版本，避免包管理器给出难懂的 No matching version。
   const probe = spawnSync('npm', ['view', `${PKG}@${semver}`, 'version'], { encoding: 'utf8', timeout: 20000 })
   const remoteHas = probe.status === 0 && String(probe.stdout ?? '').split(/\s+/).filter(Boolean).length > 0
   if (dryRun) {
-    echo(remoteHas ? `（npm 上已有 ${PKG}@${semver}）` : `⚠ npm 上还没有 ${PKG}@${semver} —— 推 v${semver} tag 后 CI 会自动发布`)
+    echo(remoteHas ? `（npm 上已有 ${PKG}@${semver}）` : `⚠ npm 上还没有 ${PKG}@${semver}，请确认版本号或稍后再试`)
   } else if (!remoteHas) {
-    fail(`${PKG}@${semver} 还没有发布到 npm。发布由 GitHub 自动完成：git tag v${semver} && git push origin v${semver}
-    · 本地开发请用 profile 的 file: 依赖（不走本命令）`)
+    fail(`${PKG}@${semver} 还没有发布到 npm，请确认版本号或稍后再试`)
   }
 
   const pm = packageManagerOf(root)
@@ -548,8 +546,8 @@ function requireDataDir (dir) {
 async function backupCli () {
   const { createBackup } = await import('../lib/backup.mjs')
   const dir = requireDataDir(dataDirArg(['--out', '--passphrase']))
-  // 默认写到 $HOME，**绝不落在当前目录**：刚才实测默认落点正好在仓库里 —— 一份含秘密的备份
-  // 若被 `git add -A` 带进提交就完了。想放别处请显式 --out。
+  // 默认写到 $HOME，绝不落在当前目录：备份可能含秘密，避免被误收进项目或同步目录。
+  // 想放别处请显式 --out。
   const out = flagValue('out', join(homedir(), 'terminalkeeper-backup-' + Date.now() + '.json'))
   const includeDeviceKey = flag('include-device-key')
   const passphrase = flagValue('passphrase', '')
