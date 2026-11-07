@@ -1,6 +1,6 @@
 {
   "name": "terminalkeeper",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "持久化 tmux 终端面板（DSH Web）：多会话管理、复用同一 shell、锁与归属、提示信息与审计复盘。",
   "author": "Mrtime-gege",
   "repository": {
@@ -49,6 +49,7 @@
     "lib/supervisor/protocol.mjs",
     "lib/supervisor/tmux-adapter.mjs",
     "lib/tmux.js",
+    "lib/tk-command.mjs",
     "lib/tool-docs.js",
     "lib/vault-io.mjs",
     "lib/vault-pepper.mjs",

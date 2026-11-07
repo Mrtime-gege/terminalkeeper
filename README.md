@@ -9,7 +9,7 @@
 
 ## 当前版本
 
-**0.1.4**（全新公开身份，从 0.1.0 开始计数）。文档站：<https://mrtime-gege.github.io/terminalkeeper/>
+**0.2.0**（待发布；审批后发布）。变化见 [CHANGELOG](https://github.com/Mrtime-gege/terminalkeeper/blob/main/CHANGELOG.md) 的 0.2.0 段落。文档站：<https://mrtime-gege.github.io/terminalkeeper/>
 
 ## 它解决什么问题
 
@@ -18,10 +18,11 @@
 terminalkeeper 让 AI 拥有**真正持久的终端**：
 
 - **7 个模型工具**：`shell_open / shell_run / shell_send / shell_read / shell_manage / shell_state / shell_audit`（同一个 shell 在一次调用里只能被操作一次，多任务请拆成多次调用）
+- **备用命令行 `/tk`**：面板不可用或需要恢复/排障时的纯文本入口；官方菜单只提示语法，不执行；日常操作请优先使用面板
 - **等待是一等公民**：`wait.kind = none / idle / bell / match / exit / file / noproc / cpu`（异步启动 → 读增量 → 用 `runId` 回取退出码）
 - **人的面板**：真终端（颜色、光标、全屏 TUI、`sudo`、REPL 全通），可锁定、可搜索、可帧回放
 - **审计链**：每次输入、会话开关、改名、宏与引用库操作都进 SHA-256 封链；删除动作本身也先入链
-- **引用库**：AI 默认只看到键名；值通过宿主侧引用喂给进程，不直接进入模型上下文。它防的是“顺手泄露”，不防拿到 shell 后主动读取
+- **引用库**：AI 默认只看到键名；值通过宿主侧引用喂给进程，不直接进入模型上下文。新库默认组默认只存内存；它防的是“顺手泄露”，不防拿到 shell 后主动读取
 - **宏 / 工作区 / 快照**：可复用的命令片段、会话布局一键恢复、屏面与历史快照
 - 桌面应用无关：`dsh` 重启会话不丢（systemd scope），关页面/换对话/热重载都不影响
 
@@ -64,7 +65,30 @@ npx -y terminalkeeper doctor                    # 体检
 2. 插件没有对话授权页面；完全控制模式下写工具直接可用，受限模式下由模式闸门拒绝。
 3. 面板点锁即可直接打字；AI 用 `shell_run` 发命令、`shell_state` 看会话。
 4. 详情面板有 8 个页签：总览 / 概览 / 运行 / 安全 / 事件记录 / 引用库事件 / 日志审计 / 键位帮助；**三级页签视觉分级**（分段控件 → 下划线 → 文字 chip）。
-5. 想彻底清理：`node purge-all.mjs`（默认 dry-run，确认后加 `--yes`）。
+5. 日常操作优先用面板：新建/切换/锁/批量操作、引用库、宏、工作区、审计都在面板；只有面板不可用或排障时才用输入栏 `/tk`（见下）。
+6. 想彻底清理：`node purge-all.mjs`（默认 dry-run，确认后加 `--yes`）。
+
+## 输入栏 `/tk`（备用入口，不推荐日常使用）
+
+> **日常操作请优先使用右下角面板和设置页。`/tk` 是备用通道，不建议作为主要操作方式；不要把“能用命令”理解成“推荐用命令”。**
+
+`/tk` 是插件注册的唯一宿主命令（`ctx.commands`），Web 输入栏、CLI/TUI 共用；命令和结果都走会话文本流，**不打开面板或其它 Web 结果页面**。它存在的意义是：面板打不开、远程/无浏览器、CLI/TUI、排障与恢复时，仍有一个纯文本入口。它不是面板的等价替代，功能和安全性都更弱。
+
+**为什么只建议备用：**
+
+1. **不会替你操作**：输入裸 `/tk` 打开的是**只读语法菜单**。选中一项只在输入栏上方显示完整语法，不执行、不填草稿；裸 `/tk` 会被清掉，仍需自己手输完整命令。
+2. **新会话草稿不执行**：`/tk` 是会话命令，必须在**已有会话**的输入栏执行；全新草稿页只能看菜单提示，先发一条消息建立会话。
+3. **命令会进入模型上下文**：命令参数、文件路径、键名、备注和结果都可能被 AI 看到。不要为了“让 AI 知道”把敏感信息写进命令。
+4. **秘密只能走文件**：没有交互式口令输入；`--value-file` / `--passphrase-file` / `--text-file` 必须指向 0600 文件，且文件路径会进入上下文。`key get` 默认只返回元数据，导出值只写文件、不打印。
+5. **功能是面板的子集**：列表筛选、批量操作、锁与接管、快照预览、引用库编辑/解锁、宏与工作区管理、审计详情、设置页等，仍以面板为主；命令只覆盖其中一部分运维动作。
+6. **没有审批，也没有更强隔离**：`--yes` 只是防误触，不是授权；危险命令护栏是启发式减速带，能绕、会误报；同用户、同机器的边界不变。
+7. **不适合长任务和交互**：长输出、TUI、实时进度、并发操作请用面板或模型工具；纯文本结果在会话里也不便于回看和筛选。
+
+**适合用 `/tk` 的场景**：面板无法打开、无浏览器/远程环境、CLI/TUI、恢复与排障、把状态或审计结果落到文本流。
+
+备用场景常用：`/tk status`、`/tk shell list`、`/tk vault group list`、`/tk audit chain`、`/tk workspace list`；完整语法用 `/tk help`。
+
+完整命令表、菜单行为和安全约束见[使用指南 · 输入栏 /tk](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/使用指南.md#p2)。
 
 ## 人机双接管
 
@@ -86,6 +110,7 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 - **危险命令护栏**：启发式减速带，能绕、会误报，不是沙箱。
 - **审计链 + 签名检查点**：能发现删改、重排和截断；不能证明“没被同权限进程改过”。
 - **引用库**：防止秘密直接进入模型上下文；**不防** AI 在 shell 里主动读文件、调本机接口或把值交给会回显的程序。
+- **输入栏 `/tk`（备用）**：日常优先面板；命令文本和结果进入会话记录；秘密值不得写在命令行，只能通过 0600 文件传入。菜单只做语法提示，不执行。
 - **跨对话**：插件不强制隔离不同对话的 shell；“不要动别人的 shell”是使用约定，不是权限边界。
 
 完整威胁模型和引用库边界见 [安全与引用库](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/安全与引用库.md)。
@@ -93,6 +118,7 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 ## 兼容性
 
 - 宿主：DeepSeek Harness（`dsh`）**`0.1.5-rc.1` 到 `0.2.1-rc.2`**。
+- `/tk` 文本命令要求宿主提供 `ctx.commands`；官方只读菜单要求客户端提供 `ctx.commandUi`。缺少对应服务时该入口不启用，其余功能不受影响。
 - 数据目录：`~/.dsh/terminalkeeper`。
 
 ## 文档
@@ -100,9 +126,10 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 | 文档 | 内容 |
 |---|---|
 | [文档站](https://mrtime-gege.github.io/terminalkeeper/) | 全部文档的网页版（目录即索引） |
-| [使用指南](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/使用指南.md) | 安装、配置、面板、工具、引用库、宏、审计、键位 |
+| [使用指南](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/使用指南.md) | 安装、配置、面板、备用输入栏 `/tk`、工具、引用库、宏、审计、键位 |
 | [工具与参数](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/工具与参数.md) | 五块模型、action.kind、等待条件、参数权威定义 |
 | [安全与引用库](https://github.com/Mrtime-gege/terminalkeeper/blob/main/docs/安全与引用库.md) | 围栏、锁、模式闸门、威胁模型、引用库信任边界 |
+| [安全策略](https://github.com/Mrtime-gege/terminalkeeper/blob/main/SECURITY.md) | 报告渠道、支持范围、安全模型摘要 |
 
 > 正文文档是 3 篇 + 本 README；文档站首页是目录页。
 
@@ -119,6 +146,7 @@ tmux -L terminalkeeper attach -t dsh-xxxx     # 人随时进去接手
 3. `shell_run { tasks: [{ target: { sessions: "<id>" }, action: { kind: "run", command: "echo ok-$((6*7))" } }] }` → 屏上出现 `ok-42`。
 4. `shell_manage { tasks: [{ target: { sessions: "<id>" }, action: { kind: "close" } }] }` 收尾。
 5. `shell_audit { tasks: [{ action: { kind: "audit" }, output: { lines: 5 } }] }` 头部 `chain: ✓`。
+6. 可选（备用入口）：请用户在**已有会话**里执行 `/tk status`，应返回 `terminalkeeper=on`、`sessions=`、`audit=` 等文本；执行 `/tk help` 应看到完整语法。日常验收仍以面板和模型工具为主。
 
 **答疑口径**：它给 DSH 加装真实、持久、可审计的终端——AI 用 7 个工具驱动多个后台 tmux 会话，人用面板旁观或上手，可互相接管；每次输入进哈希链，vault 只允许 AI 按次引用值，默认不把值直接交给模型。必须同时讲清：① 这是把真 shell 交给 AI，护栏是减速带不是沙箱；② 不是受限执行环境、默认不弹逐条审批；③ 默认「可检测篡改」。
 
