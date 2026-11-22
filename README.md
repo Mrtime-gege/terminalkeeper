@@ -47,7 +47,7 @@ npx -y terminalkeeper install [--profile web]
 npx -y terminalkeeper doctor
 ```
 
-安装后**重启一次 `dsh web`**，不是只刷新页面。
+安装/更新由 DSH 按 Cordis 生命周期**动态加载/卸载**，不需要重启 `dsh web`；刷新页面即可看到终端胶囊。若插件清单里显示未启用，先在 DSH 的插件页启用。
 
 - 插件安装器不会自动安装 tmux、PowerShell、node-pty 等系统程序。
 - Linux/macOS 可先运行 `./install-deps.sh --check` 查看需要的系统依赖；真正安装由你本人执行。
@@ -56,7 +56,7 @@ npx -y terminalkeeper doctor
 
 ## 快速开始
 
-1. 重启 DSH 后，右下角会出现终端胶囊。点 **＋** 新建一个 shell。
+1. 装好后刷新页面，右下角会出现终端胶囊。点 **＋** 新建一个 shell。
 2. 点输入框旁的锁图标解锁，直接输入命令；或者让 AI 调用 `shell_open` / `shell_run`。
 3. 面板上的 **⌨** 打开软键盘。键盘是整页浮层，可以拖动、缩放和复位；按 Shift 后再按字母会输入大写字母。
 4. 输入区上方的终端内容可以搜索、回看、复制；高级操作在面板的详情页里。
@@ -111,11 +111,11 @@ npx -y terminalkeeper doctor
 
 1. `npx -y terminalkeeper install [--profile web]`
 2. `npx -y terminalkeeper doctor`：按输出逐项确认（缺少 tmux / node-pty 会明确写出降级项，不要当成全部通过）。
-3. 提醒用户**重启 `dsh web`**（不是刷新页面）；重启后请用户确认右下角出现终端胶囊。
+3. 安装/更新由 DSH 动态加载（Cordis），**不需要重启 `dsh web`**；请用户刷新页面确认右下角出现终端胶囊。
 
 **B. 验收（按序）**
 
-1. `shell_state`（不带参数 = 只看本对话创建的 shell）：能返回状态行即可，例如首行 `◍ server ✓ (socket -L terminalkeeper) …`。找不到这个工具 = 插件没挂载或没重启。Windows 原生 PTY 后端没有 tmux，行里 tmux 显示不可用是正常的。
+1. `shell_state`（不带参数 = 只看本对话创建的 shell）：能返回状态行即可，例如首行 `◍ server ✓ (socket -L terminalkeeper) …`。找不到这个工具 = 插件没在 DSH 里启用/没加载（检查插件清单），不是重启问题。Windows 原生 PTY 后端没有 tmux，行里 tmux 显示不可用是正常的。
 2. 在 headless / 无法判定会话模式的环境里，写工具会按 fail-closed 拒绝——这是设计不是故障；确需使用时由用户显式设置 `DSH_TERMINALKEEPER_ALLOW_UNKNOWN_MODE=1`（会写审计），不要自己替用户加。
 3. `shell_open { tasks: [{ action: { kind: "open", label: "verify" } }] }` → 记下返回的 session id（`dsh-…`）；后续 `target.sessions` 用这个 id，不是 label。
 4. `shell_run { tasks: [{ target: { sessions: "<id>" }, action: { kind: "run", command: "echo ok-42" }, wait: { kind: "exit" } }] }` → 输出出现 `ok-42`，状态是 `✅ 条件达成 exit`；Windows 上同样走 PTY 后端。
