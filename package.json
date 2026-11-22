@@ -1,6 +1,6 @@
 {
   "name": "terminalkeeper",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "持久化 tmux 终端面板（DSH Web）：多会话管理、复用同一 shell、锁与归属、提示信息与审计复盘。",
   "author": "Mrtime-gege",
   "repository": {
@@ -44,6 +44,11 @@
     "lib/retention.mjs",
     "lib/settings-registry.mjs",
     "lib/statehead.mjs",
+    "lib/terminal/backends/tmux.mjs",
+    "lib/terminal/backends/pty.mjs",
+    "lib/terminal/backends/windows-shell.mjs",
+    "lib/terminal/contract.mjs",
+    "lib/terminal/index.mjs",
     "lib/supervisor/client.mjs",
     "lib/supervisor/daemon.mjs",
     "lib/supervisor/protocol.mjs",
@@ -60,16 +65,27 @@
     "LICENSE",
     "package.json",
     "purge-all.mjs",
-    "README.md"
+    "README.md",
+    "install-deps.ps1"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "dsh": ">=0.2.1-rc.2 <0.3.0 || >=0.2.2-rc.3 <0.3.0"
   },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {},
+  "scripts": {
+    "prepack": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));const c=fs.readFileSync('CHANGELOG.md','utf8');const t=fs.readFileSync('lib/channel.js','utf8');if(!/CHANNEL\\s*=\\s*'release'/.test(t)||/CHANNEL\\s*=\\s*'dev'/.test(t)){console.error('not release channel');process.exit(1)}if(!c.includes('## ['+p.version+']')){console.error('CHANGELOG missing version '+p.version);process.exit(1)}\"",
+    "prepublishOnly": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));const c=fs.readFileSync('CHANGELOG.md','utf8');const t=fs.readFileSync('lib/channel.js','utf8');if(!/CHANNEL\\s*=\\s*'release'/.test(t)||/CHANNEL\\s*=\\s*'dev'/.test(t)){console.error('not release channel');process.exit(1)}if(!c.includes('## ['+p.version+']')){console.error('CHANGELOG missing version '+p.version);process.exit(1)}\""
+  },
   "dsh": {
+    "manifestVersion": 1,
     "bundle": {
       "patch": "./cordis.patch.yml"
     },
@@ -82,7 +98,7 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-tools": "^0.1.2-rc.1 || ^0.2.0-rc.2 || ^0.2.1-rc.2",
+    "@deepseek-ai/dsh-tools": "^0.1.2-rc.1 || ^0.2.0-rc.2 || ^0.2.1-rc.2 || ^0.2.2-rc.3",
     "@deepseek-ai/schemastery": "^3.18.0",
     "react": "^18.2.0"
   },
@@ -125,5 +141,9 @@
     "title": "Agent Shell",
     "description": "在 DSH Web 界面里提供持久化 tmux 终端面板：多会话管理、复用同一 shell、锁与归属、提示与审计复盘。"
   },
-  "icon": "./icon.svg"
+  "icon": "./icon.svg",
+  "optionalDependencies": {
+    "@xterm/headless": "^6.0.0",
+    "node-pty": "^1.1.0"
+  }
 }
